@@ -1,17 +1,17 @@
 데이터베이스 테이블
-users (id, userid, password, nickname, provider, provider_id, role, created_at, updated_at)
-subscriptions (id, user_id, subscription_type, start_date, end_date, is_active)
-news (id, original_url, title, content, summary, published_at, source, created_at)
-categories (id, name)
-tags (id, name)
-insight (id, title, content, domain, created_at)
-news_categories (news_id, category_id) / PK: news_id, category_id
-news_tags (news_id, tag_id) / PK: news_id, tag_id
+user (id, userid, password, nickname, provider, provider_id, role, create_at, update_at)
+subscription (id, user_id, subscription_type, start_date, end_date, is_active)
+news (id, original_url, title, content, summary, published_at, source, create_at)
+category (id, name)
+tag (id, name)
+insight (id, title, content, domain, create_at)
+news_category (news_id, category_id) / PK: news_id, category_id
+news_tag (news_id, tag_id) / PK: news_id, tag_id
 insight_news (insight_id, news_id) / PK: insight_id, news_id
 
 -----------------------------
 
-Users (사용자 정보)
+User (사용자 정보)
 id (PK, BIGINT, AUTO_INCREMENT)
 userid (VARCHAR, UNIQUE)
 password (VARCHAR)
@@ -19,13 +19,13 @@ nickname (VARCHAR, UNIQUE)
 provider (VARCHAR)  -- OAuth2 연동 고려 (local/google/kakao ...)
 provider_id (VARCHAR)  -- OAuth2 제공 ID
 role (VARCHAR)  -- 유저 권한 (user/admin)
-created_at (DATETIME)
-updated_at (DATETIME)
+create_at (DATETIME)
+update_at (DATETIME)
 
 
-Subscriptions (구독 정보)
+Subscription (구독 정보)
 id (PK, BIGINT, AUTO_INCREMENT)
-user_id (FK from Users)
+user_id (FK from User)
 subscription_type (VARCHAR)  -- 구독타입 (standard/premium)
 start_date (DATETIME)  -- 구독 시작일
 end_date (DATETIME)  -- 구독 종료일
@@ -40,15 +40,15 @@ content (TEXT)  -- 원본 내용
 summary (TEXT)  -- AI 요약 내용
 published_at (DATETIME) - 기사 발행일
 source (VARCHAR)  -- 언론사
-created_at (DATETIME)  -- 기사를 수집해서 내 데이터베이스에 저장한 시간
+create_at (DATETIME)  -- 기사를 수집해서 내 데이터베이스에 저장한 시간
 
 
-Categories (카테고리)
+Category (카테고리)
 id (PK, INT, AUTO_INCREMENT)
 name (VARCHAR, UNIQUE) 
 
 
-Tags (태그)
+Tag (태그)
 id (PK, BIGINT, AUTO_INCREMENT)
 name (VARCHAR, UNIQUE)
 
@@ -58,20 +58,20 @@ id (PK, BIGINT, AUTO_INCREMENT)
 title (VARCHAR) 
 content (TEXT) 
 domain (VARCHAR)
-created_at (DATETIME)
+create_at (DATETIME)
 
 
 
 
-News_Categories (뉴스-카테고리 연결)
+News_Category (뉴스-카테고리 연결)
 news_id (FK from News)
-category_id (FK from Categories)
+category_id (FK from Category)
 (PK: news_id, category_id)
 
 
-News_Tags (뉴스-태그 연결)
+News_Tag (뉴스-태그 연결)
 news_id (FK from News)
-tag_id (FK from Tags)
+tag_id (FK from Tag)
 (PK: news_id, tag_id)
 
 
@@ -87,21 +87,22 @@ news_id (FK from News)
 CREATE DATABASE news_insight;
 use news_insight;
 
-CREATE TABLE users (
+CREATE TABLE user (
     id BIGINT NOT NULL AUTO_INCREMENT,
     userid VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     nickname VARCHAR(100) NOT NULL UNIQUE,
     provider VARCHAR(50) NOT NULL DEFAULT 'local',
     provider_id VARCHAR(255) NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'ROLE_USER',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE subscriptions (
+CREATE TABLE subscription (
     id BIGINT NOT NULL AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     subscription_type VARCHAR(100) NOT NULL,
@@ -120,20 +121,20 @@ CREATE TABLE news (
     summary TEXT NULL,
     published_at DATETIME NOT NULL,
     source VARCHAR(100) NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_published_at (published_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE categories (
+CREATE TABLE category (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL UNIQUE,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE tags (
+CREATE TABLE tag (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL UNIQUE,
     PRIMARY KEY (id)
@@ -145,20 +146,20 @@ CREATE TABLE insight (
     title VARCHAR(512) NOT NULL,
     content TEXT NULL,
     domain VARCHAR(100) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_domain (domain)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE news_categories (
+CREATE TABLE news_category (
     news_id BIGINT NOT NULL,
     category_id INT NOT NULL,
     PRIMARY KEY (news_id, category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE news_tags (
+CREATE TABLE news_tag (
     news_id BIGINT NOT NULL,
     tag_id BIGINT NOT NULL,
     PRIMARY KEY (news_id, tag_id)

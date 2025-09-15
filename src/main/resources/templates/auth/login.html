@@ -1,18 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>로그인 페이지</title>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        .error { color: red; font-size: 0.9em; margin-top: 5px; margin-bottom: 10px; }
+    </style>
 </head>
+
 <body>
-<h2>로그인</h2>
+<h1>Login Page</h1>
 
-<form>
-    아이디: <input type="text" name="username"><br><br>
-    비밀번호: <input type="password" name="password"><br><br>
-
+<form method="post" th:action="@{/auth/login}" th:object="${loginDTO}">
+<!--    <div th:if="${loginFailMsg}" class="error" th:text="${loginFailMsg}">-->
+<!--        아이디 또는 비밀번호가 올바르지 않습니다.-->
+<!--    </div>-->
+    <div>
+        <h3>ID : <input type="text" th:field="*{userid}" required></h3>
+        <div class="error" th:if="${#fields.hasErrors('userid')}" th:errors="*{userid}"></div>
+    </div>
+    <div>
+        <h3>PW : <input type="password" th:field="*{password}" required></h3>
+        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+    </div>
     <input type="submit" value="로그인">
-    <a href="/signup">회원가입</a> <br>
-    <a href="/">돌아가기</a>
+    <input type="button" value="회원가입" th:onclick="|location.href='@{/auth/signup}'|"> <br>
 </form>
+
+<br><br>
+
+<div style="border: 1px solid black">
+    <h3>소셜 계정으로 로그인</h3>
+    <a href="/oauth2/authorization/google">Google로 로그인</a>
+    <a href="/oauth2/authorization/naver">Naver로 로그인</a>
+</div>
+
+<a href="/"> 뒤로가기 </a>
+
 </body>
 </html>

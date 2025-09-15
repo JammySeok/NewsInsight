@@ -1,5 +1,7 @@
 package com.example.NewsInsight.entity;
 
+import com.example.NewsInsight.enums.ProviderType;
+import com.example.NewsInsight.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,11 +32,16 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String nickname;
 
-    private String provider;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProviderType provider;
+
+    @Column(name = "provider_id")
     private String providerId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private UserRole role;
 
     @Column(name = "create_at", nullable = false, updatable = false)
     @CreationTimestamp
