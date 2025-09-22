@@ -1,10 +1,12 @@
 데이터베이스 테이블
-user (id, userid, password, nickname, provider, provider_id, role, create_at, update_at)
-subscription (id, user_id, subscription_type, start_date, end_date, is_active)
-news (id, original_url, title, content, summary, published_at, source, create_at)
+user (id, userid, password, email, nickname, provider, provider_id, role, create_at, update_at)
+subscription (id, user_id, subscription_type, start_date, end_date, is_active, active_flag)
+news (id, original_url, title, content, content_ptr, summary, published_at, source, hash, status, create_at, summarized_at, tagged_at)
 category (id, name)
 tag (id, name)
-insight (id, title, content, domain, create_at)
+insight (id, title, content, domain, confidence, references_json, created_by, create_at)
+briefing (id, brief_date, section, items_json, create_at, update_at)
+event_audit (id, event_type, payload_json, actor, created_at)
 news_category (news_id, category_id) / PK: news_id, category_id
 news_tag (news_id, tag_id) / PK: news_id, tag_id
 insight_news (insight_id, news_id) / PK: insight_id, news_id
@@ -15,6 +17,7 @@ User (사용자 정보)
 id (PK, BIGINT, AUTO_INCREMENT)
 userid (VARCHAR, UNIQUE)
 password (VARCHAR)
+email (VARCHAR)
 nickname (VARCHAR, UNIQUE)
 provider (VARCHAR)  -- OAuth2 연동 고려 (local/google/kakao ...)
 provider_id (VARCHAR)  -- OAuth2 제공 ID
@@ -30,6 +33,7 @@ subscription_type (VARCHAR)  -- 구독타입 (standard/premium)
 start_date (DATETIME)  -- 구독 시작일
 end_date (DATETIME)  -- 구독 종료일
 is_active (BOOLEAN)  -- 구독 상황
+active_flag (TINYINT) ----- 추가
 
 
 News (뉴스 기사)
@@ -37,10 +41,15 @@ id (PK, BIGINT, AUTO_INCREMENT)
 original_url (VARCHAR, UNIQUE)  -- 기사 원문 주소
 title (VARCHAR)  -- 원본 제목
 content (TEXT)  -- 원본 내용
+content_ptr (VARCHAR) ----- 전체 콘텐츠가 저장된 외부 경로(추가) 
 summary (TEXT)  -- AI 요약 내용
 published_at (DATETIME) - 기사 발행일
 source (VARCHAR)  -- 언론사
+hash (CHAR) ----- 콘텐츠 중복 판별을 위한 SHA-256 해시값(추가)
+status (VARCHAR) ----- 뉴스 처리 상태 (crawled/summarized/tagged/failed ...)(추가)
 create_at (DATETIME)  -- 기사를 수집해서 내 데이터베이스에 저장한 시간
+summarized_at (DATETIME) ----- 요약 완료 시간(추가)
+tagged_at (DATETIME) ----- 태깅 완료 시간(추가)
 
 
 Category (카테고리)
@@ -58,9 +67,27 @@ id (PK, BIGINT, AUTO_INCREMENT)
 title (VARCHAR) 
 content (TEXT) 
 domain (VARCHAR)
+confidence (DECIMAL) ----- AI 생성 신뢰도 점수(추가)
+references_json (JSON) ----- 참고 자료 JSON 형태 저장(추가)
+created_by (BIGINT) ----- 인사이트 생성자(추가)
 create_at (DATETIME)
 
 
+briefing (브리핑) ----- (추가)
+id (BIGINT)
+brief_date (DATE)
+section (VARCHAR)
+items_json (JSON)
+create_at (DATETIME)
+update_at (DATETIME)
+
+
+EVENT_AUDIT (이벤트 감사 로그) ----- 추가
+id (BIGINT)
+event_type (VARCHAR)
+payload_json (JSON)
+actor (VARCHAR)
+created_at (DATETIME)
 
 
 News_Category (뉴스-카테고리 연결)
@@ -85,7 +112,7 @@ news_id (FK from News)
 
 
 CREATE DATABASE news_insight;
-use news_insight;
+USE news_insight;
 
 CREATE TABLE user (
     id BIGINT NOT NULL AUTO_INCREMENT,
@@ -93,7 +120,7 @@ CREATE TABLE user (
     password VARCHAR(255) NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     nickname VARCHAR(100) NOT NULL UNIQUE,
-    provider VARCHAR(50) NOT NULL DEFAULT 'local',
+    provider VARCHAR(50) NOT NULL,
     provider_id VARCHAR(255) NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'ROLE_USER',
     create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -109,7 +136,9 @@ CREATE TABLE subscription (
     start_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id)
+    active_flag TINYINT NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -118,12 +147,18 @@ CREATE TABLE news (
     original_url VARCHAR(767) NOT NULL UNIQUE,
     title VARCHAR(512) NOT NULL,
     content MEDIUMTEXT NULL,
+    content_ptr VARCHAR(1024) NULL,
     summary TEXT NULL,
     published_at DATETIME NOT NULL,
     source VARCHAR(100) NULL,
+    hash CHAR(64) NULL,
+    status VARCHAR(50) NOT NULL,
     create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    summarized_at DATETIME NULL,
+    tagged_at DATETIME NULL,
     PRIMARY KEY (id),
-    INDEX idx_published_at (published_at)
+    INDEX idx_published_at (published_at),
+    INDEX idx_hash (hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -146,30 +181,63 @@ CREATE TABLE insight (
     title VARCHAR(512) NOT NULL,
     content TEXT NULL,
     domain VARCHAR(100) NOT NULL,
+    confidence DECIMAL(5, 4) NULL,
+    references_json JSON NULL,
+    created_by BIGINT NULL,
     create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    INDEX idx_domain (domain)
+    INDEX idx_domain (domain),
+    FOREIGN KEY (created_by) REFERENCES user(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE briefing (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    brief_date DATE NOT NULL,
+    section VARCHAR(100) NOT NULL,
+    items_json JSON NULL,
+    create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_briefing_date_section (brief_date, section)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE event_audit (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    event_type VARCHAR(255) NOT NULL,
+    payload_json JSON NULL,
+    actor VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_event_type (event_type),
+    INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE news_category (
     news_id BIGINT NOT NULL,
     category_id INT NOT NULL,
-    PRIMARY KEY (news_id, category_id)
+    PRIMARY KEY (news_id, category_id),
+    FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE news_tag (
     news_id BIGINT NOT NULL,
     tag_id BIGINT NOT NULL,
-    PRIMARY KEY (news_id, tag_id)
+    PRIMARY KEY (news_id, tag_id),
+    FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE insight_news (
     insight_id BIGINT NOT NULL,
     news_id BIGINT NOT NULL,
-    PRIMARY KEY (insight_id, news_id)
+    PRIMARY KEY (insight_id, news_id),
+    FOREIGN KEY (insight_id) REFERENCES insight(id) ON DELETE CASCADE,
+    FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 

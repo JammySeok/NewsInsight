@@ -1,0 +1,100 @@
+백엔드 코드 구조
+
+(package) entity
+  > CategoryEntity
+  > InsightEntity
+  > NewsEntity
+  > SubscriptionEntity
+  > UserEntity
+  > TagEntity // [추가] Tag 테이블 대응
+  > BriefingEntity // [추가] Briefing 테이블 대응
+  > EventAuditEntity // [추가] EventAudit 테이블 대응
+
+(package) mapper
+  > UserMapper
+  > NewsMapper
+  > InsightMapper
+  > ... 필요에 따라 추가
+
+(package) dto
+  > (package) user
+  ----> LoginDTO
+  ----> SignupDTO
+  ----> UserDTO
+  > (package) news // [추가]
+  ----> NewsResponseDTO (뉴스 상세 조회 응답)
+  ----> NewsSimpleDTO (뉴스 목록 조회 응답)
+  ----> NewsCrawlRequestDTO (관리자용 크롤링 요청)
+  > (package) insight // [추가]
+  ----> InsightResponseDTO (인사이트 조회 응답)
+  ----> InsightCreateRequestDTO (인사이트 생성 요청)
+  > (package) subscription // [추가]
+  ----> SubscriptionResponseDTO (마이페이지: 구독 상태 응답)
+  ----> SubscriptionRequestDTO (구독 신청/변경 요청)
+  > (package) search // [추가]
+  ----> SearchRequestDTO (검색 조건 요청)
+  ----> SearchResultDTO (검색 결과 응답)
+  > OAuthAttributes
+
+(package) repository
+  > (Interface) CategoryRepository
+  > (Interface) InsightRepository
+  > (Interface) NewsRepository
+  > (Interface) SubscriptionRepository
+  > (Interface) UserRepository
+  > TagRepository // [추가]
+  > BriefingRepository // [추가]
+
+(package) service
+  > (package) impl 
+  ----> AuthServiceImpl  [로그인/회원가입(로컬) 등 인증 관련 기능]
+  ----> UserServiceImpl  [관리자: 유저 CRUD 기능]
+  ----> CustomOAuth2UserService [OAuth2로 로그인 관련 기능]
+  ----> NewsServiceImpl // [추가] 뉴스 CRUD, AI 요약/태깅 요청 등
+  ----> InsightServiceImpl // [추가] 인사이트 생성 및 관리
+  ----> SubscriptionServiceImpl // [추가] 구독 관련 로직 처리
+  ----> CurationServiceImpl // [추가] 개인화 큐레이션 로직
+  ----> AdminServiceImpl // [추가] 관리자 기능 전용 서비스
+  > (Interface) AuthService 
+  > (Interface) UserService
+  > (Interface) NewsService // [추가]
+  >(Interface)  InsightService // [추가]
+  >(Interface)  SubscriptionService // [추가]
+  > (Interface) CurationService // [추가]
+  >(Interface)  AdminService // [추가]
+
+(package) controller
+  > AuthController
+  > LoginController
+   > UserController
+  > NewsController // [추가] 뉴스 조회, 검색 등
+  > InsightController // [추가] 인사이트 조회
+  > SubscriptionController // [추가] 구독 신청/조회/해지
+  > AdminController // [추가] 관리자용 API (뉴스 관리, 사용자 관리 등)
+  > IndexController  [기본 화면]
+  > ErrorController  [에러 화면]
+
+(package) security
+  > SecurityConfig [인증/페이지 접근/패스워드 암호화 등 보안적인 기능]
+  > UserDetailServiceImpl []
+  > CustomUserDetails  []
+  > (package) jwt // [추가] (JWT 사용 시)
+  ----> JwtTokenProvider (토큰 생성 및 검증)
+  ----> JwtAuthenticationFilter (요청 헤더의 토큰을 검증하는 필터)
+
+(package) enums
+  > ProviderType  [로컬인지 OAuth2(네이버/구글) 인지 구분]
+  > UserRole [유저 등급 구분]
+
+(package) client // [API 연동 추가] 
+ > AIModelClient (Python API를 호출하는 역할)
+ > (package) dto
+ ----> SummaryRequestDTO (요약을 요청할 때 보낼 데이터)
+ ----> TaggingRequestDTO (태깅을 요청할 때 보낼 데이터)
+ ----> SummaryResponseDTO (요약 결과를 받을 데이터)
+ ----> TaggingResponseDTO (태깅 결과를 받을 데이터)
+
+(package) config // [추가]
+ > WebClientConfig (API 호출을 위한 WebClient 또는 RestTemplate 설정)
+
+
