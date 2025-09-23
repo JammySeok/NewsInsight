@@ -3,6 +3,7 @@ package com.example.NewsInsight.controller;
 import com.example.NewsInsight.dto.LoginDTO;
 import com.example.NewsInsight.dto.SignupDTO;
 import com.example.NewsInsight.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,15 +33,21 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public String addUser(@ModelAttribute SignupDTO signupDTO, BindingResult bindingResult, Model model) {
+    public String addUser(@Valid @ModelAttribute SignupDTO signupDTO, BindingResult bindingResult, Model model) {
+
         if(bindingResult.hasErrors()) {
+            return "auth/signup";
+        }
+
+        if(!signupDTO.getPassword().equals(signupDTO.getConfirm())) {
+            bindingResult.rejectValue("confirm", "password.no_match", "비밀번호가 일치하지 않습다.");
             return "auth/signup";
         }
 
         try {
             authService.signup(signupDTO);
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            bindingResult.rejectValue("userid", "userid.duplicate", e.getMessage());
             return "auth/signup";
         }
 

@@ -43,11 +43,11 @@ title (VARCHAR)  -- 원본 제목
 content (TEXT)  -- 원본 내용
 content_ptr (VARCHAR) ----- 전체 콘텐츠가 저장된 외부 경로(추가) 
 summary (TEXT)  -- AI 요약 내용
-published_at (DATETIME) - 기사 발행일
 source (VARCHAR)  -- 언론사
 hash (CHAR) ----- 콘텐츠 중복 판별을 위한 SHA-256 해시값(추가)
 status (VARCHAR) ----- 뉴스 처리 상태 (crawled/summarized/tagged/failed ...)(추가)
 create_at (DATETIME)  -- 기사를 수집해서 내 데이터베이스에 저장한 시간
+published_at (DATETIME) - 기사 발행일
 summarized_at (DATETIME) ----- 요약 완료 시간(추가)
 tagged_at (DATETIME) ----- 태깅 완료 시간(추가)
 

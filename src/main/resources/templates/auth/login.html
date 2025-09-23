@@ -12,9 +12,9 @@
 <h1>Login Page</h1>
 
 <form method="post" th:action="@{/auth/login}" th:object="${loginDTO}">
-<!--    <div th:if="${loginFailMsg}" class="error" th:text="${loginFailMsg}">-->
-<!--        아이디 또는 비밀번호가 올바르지 않습니다.-->
-<!--    </div>-->
+    <div th:if="${param.error}" class="error">
+        아이디 또는 비밀번호가 올바르지 않습니다.
+    </div>
     <div>
         <h3>ID : <input type="text" th:field="*{userid}" required></h3>
         <div class="error" th:if="${#fields.hasErrors('userid')}" th:errors="*{userid}"></div>

@@ -6,14 +6,14 @@
   > NewsEntity
   > SubscriptionEntity
   > UserEntity
-  > TagEntity // [추가] Tag 테이블 대응
-  > BriefingEntity // [추가] Briefing 테이블 대응
-  > EventAuditEntity // [추가] EventAudit 테이블 대응
+  > TagEntity 
+  > BriefingEntity 
+  > EventAuditEntity 
 
 (package) mapper
-  > UserMapper
-  > NewsMapper
-  > InsightMapper
+  > (interface) UserMapper
+  > (interface) NewsMapper
+  > (interface) InsightMapper
   > ... 필요에 따라 추가
 
 (package) dto
@@ -42,8 +42,8 @@
   > (Interface) NewsRepository
   > (Interface) SubscriptionRepository
   > (Interface) UserRepository
-  > TagRepository // [추가]
-  > BriefingRepository // [추가]
+  > (Interface) TagRepository 
+  > (Interface) BriefingRepository
 
 (package) service
   > (package) impl 
@@ -58,15 +58,15 @@
   > (Interface) AuthService 
   > (Interface) UserService
   > (Interface) NewsService // [추가]
-  >(Interface)  InsightService // [추가]
-  >(Interface)  SubscriptionService // [추가]
+  > (Interface) InsightService // [추가]
+  > (Interface) SubscriptionService // [추가]
   > (Interface) CurationService // [추가]
-  >(Interface)  AdminService // [추가]
+  > (Interface) AdminService // [추가]
 
 (package) controller
   > AuthController
   > LoginController
-   > UserController
+  > UserController
   > NewsController // [추가] 뉴스 조회, 검색 등
   > InsightController // [추가] 인사이트 조회
   > SubscriptionController // [추가] 구독 신청/조회/해지

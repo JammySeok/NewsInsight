@@ -11,10 +11,11 @@ public class SubscriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
 //    private UserEntity user;
     private String subscriptionType;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Boolean isActive;
-
+    private Integer active_flag;
 }

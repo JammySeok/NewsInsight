@@ -1,14 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>메인 페이지</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Insight</title>
 </head>
 <body>
 
-<h1>환영합니다!</h1>
-<p>로그인을 하시려면 아래 버튼을 클릭하세요.</p>
+<h1>News Insight</h1>
+<hr>
 
-<a href="/auth/login">로그인 페이지로 이동</a>
+<div sec:authorize="isAuthenticated()">
+    <p><span sec:authentication="principal.nickname"></span>님 환영합니다.</p>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">로그아웃</button>
+    </form>
+    <hr>
+
+    <div>
+        <a th:href="@{/}">News Summary</a> <br>
+        <a th:href="@{/subscription/hotIssue}">Hot Issue</a> <br>
+        <a th:href="@{/subscription/domainInsight}">Domain Insight</a>
+    </div>
+    <hr>
+
+    <h2>뉴스 기사 요약</h2>
+    <form id="summarize-form">
+        <div>
+            <textarea id="article-text" name="article" rows="15" cols="80" placeholder="여기에 뉴스 기사 원문을 붙여넣으세요..."></textarea>
+        </div>
+        <button type="submit">요약하기</button>
+    </form>
+
+    <!-- 결과 표시 영역 -->
+    <div id="result-container" hidden>
+        <hr>
+        <div id="loading-indicator" hidden>
+            <p>AI가 기사를 분석하고 있습니다. 잠시만 기다려주세요...</p>
+        </div>
+
+        <div id="summary-result" hidden>
+            <h3>요약 결과</h3>
+            <p id="summary-text" style="white-space: pre-wrap;"></p>
+        </div>
+
+        <div id="error-message" hidden>
+            <p><strong>오류 발생!</strong> <span id="error-text"></span></p>
+        </div>
+    </div>
+</div>
+
+<div sec:authorize="isAnonymous()">
+    <h2>뉴스 요약 기능을 사용해보세요!</h2>
+    <p>로그인하고 AI가 분석해주는 핵심 뉴스 요약 서비스를 이용해보세요.</p>
+    <a th:href="@{/auth/login}">로그인 페이지로 이동</a>
+</div>
+
+<script>
+    // 폼 요소는 로그인 되었을 때만 존재하므로, null 체크를 통해 스크립트 오류를 방지합니다.
+    const summarizeForm = document.getElementById('summarize-form');
+
+    if (summarizeForm) {
+        const articleTextarea = document.getElementById('article-text');
+        const resultContainer = document.getElementById('result-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const summaryResult = document.getElementById('summary-result');
+        const summaryText = document.getElementById('summary-text');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        summarizeForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // 페이지 새로고침 방지
+
+            const articleContent = articleTextarea.value.trim();
+            if (articleContent === '') {
+                alert('요약할 기사 내용을 입력해주세요.');
+                return;
+            }
+
+            // 결과 영역 보이기 및 상태 초기화
+            resultContainer.hidden = false;
+            summaryResult.hidden = true;
+            errorMessage.hidden = true;
+            loadingIndicator.hidden = false;
+
+            try {
+                // 백엔드 API 엔드포인트로 요청 전송
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ article: articleContent })
+                });
+
+                if (!response.ok) {
+                    // 서버에서 에러 응답이 온 경우
+                    const errorData = await response.json().catch(() => ({ message: `서버 오류 (${response.status})` }));
+                    throw new Error(errorData.message);
+                }
+
+                const data = await response.json();
+
+                // 로딩 숨기고 성공 결과 표시
+                loadingIndicator.hidden = true;
+                summaryText.textContent = data.summary; // 응답 데이터에 summary 필드가 있다고 가정
+                summaryResult.hidden = false;
+
+            } catch (error) {
+                // 네트워크 오류 또는 서버 에러 발생 시
+                loadingIndicator.hidden = true;
+                errorText.textContent = error.message;
+                errorMessage.hidden = false;
+                console.error('Summarization failed:', error);
+            }
+        });
+    }
+</script>
 
 </body>
 </html>

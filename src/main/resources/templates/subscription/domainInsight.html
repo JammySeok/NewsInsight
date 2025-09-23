@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Domain Insight</title>
+</head>
+<body>
+
+<h1>News Insight</h1>
+
+<div sec:authorize="isAuthenticated()">
+
+    <p><span sec:authentication="principal.nickname"></span>님 환영합니다.</p>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">로그아웃</button>
+    </form>
+    <hr>
+
+    <div>
+        <a th:href="@{/}">News Summary</a> <br>
+        <a th:href="@{/subscription/hotIssue}">Hot Issue</a> <br>
+        <a th:href="@{/subscription/domainInsight}">Domain Insight</a>
+    </div>
+    <hr>
+    <h2>도메인 인사이트</h2>
+    <h3>도메인을 설정하시면, 맞는 인사이트가 나옵니다!!</h3>
+</div>
+
+</body>
+</html>

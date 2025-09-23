@@ -4,6 +4,7 @@ import com.example.NewsInsight.dto.SignupDTO;
 import com.example.NewsInsight.entity.UserEntity;
 import com.example.NewsInsight.enums.ProviderType;
 import com.example.NewsInsight.enums.UserRole;
+import com.example.NewsInsight.mapper.UserMapper;
 import com.example.NewsInsight.repository.UserRepository;
 import com.example.NewsInsight.service.AuthService;
 import jakarta.transaction.Transactional;
@@ -17,6 +18,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Transactional
     public void signup(SignupDTO signupDTO) {
@@ -29,12 +31,8 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
 
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUserid(signupDTO.getUserid());
+        UserEntity userEntity = userMapper.toEntityFromSignupDTO(signupDTO);
         userEntity.setPassword(passwordEncoder.encode(signupDTO.getPassword()));
-        userEntity.setEmail(signupDTO.getEmail());
-        userEntity.setNickname(signupDTO.getNickname());
-
         userEntity.setRole(UserRole.USER);
         userEntity.setProvider(ProviderType.LOCAL);
 

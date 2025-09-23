@@ -13,6 +13,7 @@ import java.util.Map;
 public class CustomUserDetails extends User implements OAuth2User {
 
     private final Integer id;
+    private final String nickname;
     private Map<String, Object> attributes; // OAuth2 사용자 정보를 담을 필드
 
     // 1. 일반 로그인용 생성자
@@ -23,6 +24,7 @@ public class CustomUserDetails extends User implements OAuth2User {
                 Collections.singleton(new SimpleGrantedAuthority(userEntity.getRole().getKey()))
         );
         this.id = userEntity.getId();
+        this.nickname = userEntity.getNickname();
     }
 
     // 2. OAuth2 로그인용 생성자
@@ -33,6 +35,7 @@ public class CustomUserDetails extends User implements OAuth2User {
                 Collections.singleton(new SimpleGrantedAuthority(userEntity.getRole().getKey()))
         );
         this.id = userEntity.getId();
+        this.nickname = userEntity.getNickname();
         this.attributes = attributes;
     }
 
