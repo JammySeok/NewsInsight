@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User List</title>
+</head>
+<body>
+
+<h1>유저 정보</h1>
+
+<table border="1">
+    <tr>
+        <th>id</th>
+        <th>userid</th>
+        <th>nickname</th>
+        <th>email</th>
+        <th>provider</th>
+        <th>role</th>
+        <th>createAt</th>
+        <th>updateAt</th>
+    </tr>
+    <tr th:each="user: ${userList}">
+        <td th:text="${user.id}">id</td>
+        <td th:text="${user.userid}">userid</td>
+        <td th:text="${user.nickname}">nickname</td>
+        <td th:text="${user.email}">email</td>
+        <td th:text="${user.provider}">provider</td>
+        <td th:text="${user.role}">role</td>
+        <td th:text="${#temporals.format(user.createAt, 'yy/MM/dd a hh:mm:ss')}">createAt</td>
+        <td th:text="${#temporals.format(user.updateAt, 'yy/MM/dd a hh:mm:ss')}">updateAt</td>
+        <td><a th:href="@{'/admin/users/' + ${user.id}}">수정</a></td>
+    </tr>
+</table>
+
+<a th:href="@{/}">뒤로가기</a> <br>
+
+</body>
+</html>

@@ -18,6 +18,9 @@
     </form>
     <hr>
 
+    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}">User List</a>
+    <hr sec:authorize="hasRole('ADMIN')">
+
     <div>
         <a th:href="@{/}">News Summary</a> <br>
         <a th:href="@{/subscription/hotIssue}">Hot Issue</a> <br>
@@ -33,7 +36,6 @@
         <button type="submit">요약하기</button>
     </form>
 
-    <!-- 결과 표시 영역 -->
     <div id="result-container" hidden>
         <hr>
         <div id="loading-indicator" hidden>

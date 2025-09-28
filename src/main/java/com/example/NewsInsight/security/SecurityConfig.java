@@ -22,6 +22,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/auth/*", "/css/**", "/js/**", "/images/**", "/error/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
         );
 
@@ -48,6 +49,10 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
+        );
+
+        http.exceptionHandling(exception -> exception
+                .accessDeniedPage("/error/forbidden")
         );
 
         return http.build();
