@@ -18,8 +18,14 @@
     </form>
     <hr>
 
-    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}">User List</a>
-    <hr sec:authorize="hasRole('ADMIN')">
+
+    <div sec:authorize="hasRole('ADMIN')">
+        <p>ADMIN</p>
+        <a th:href="@{/admin/users}">User List</a>
+    </div>
+
+    <a th:href="@{/users/me}">my Page</a>
+    <hr>
 
     <div>
         <a th:href="@{/}">News Summary</a> <br>

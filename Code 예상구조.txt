@@ -79,14 +79,41 @@
   > UserRole [유저 등급 구분]
 
 (package) client // [API 연동 추가] 
- > AIModelClient (Python API를 호출하는 역할)
- > (package) dto
+  > AIModelClient (Python API를 호출하는 역할)
+  > (package) dto
  ----> SummaryRequestDTO (요약을 요청할 때 보낼 데이터)
  ----> TaggingRequestDTO (태깅을 요청할 때 보낼 데이터)
  ----> SummaryResponseDTO (요약 결과를 받을 데이터)
  ----> TaggingResponseDTO (태깅 결과를 받을 데이터)
 
-(package) config // [추가]
- > WebClientConfig (API 호출을 위한 WebClient 또는 RestTemplate 설정)
+(package) config
+  > RedisCacheConfig
+  > RedisConfig
+  > WebClientConfig (API 호출을 위한 WebClient 또는 RestTemplate 설정)
+
+
+
+
+
+template
+  > auth
+    > login.html
+    > signup.html
+  > error
+    > forbidden.html
+  > subscription
+    > domainInsight.html
+    > hotIssue.html
+  > admin
+    >user
+      > userDetail.html   
+      > userList.html   
+  > user
+    > myPage
+      > deleteConfrim.html
+      > updateEmail.html
+      > updateNickname.html
+      > updatePassword.html
+  > index.html
 
 

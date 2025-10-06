@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Email</title>
+</head>
+<body>
+
+<h1>이메일 수정</h1>
+
+<form th:action="@{/users/me/update-email}" method="post">
+    <input type="text" name="email" th:value="${user.email}">
+    <button type="submit">수정 완료</button>
+</form>
+
+<a th:href="@{/users/me}">취소</a>
+
+</body>
+</html>
