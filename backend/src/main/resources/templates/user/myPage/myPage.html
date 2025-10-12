@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Page</title>
+    <style>
+        h3 a {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>My profile</h1>
+
+<div th:object="${user}">
+    <h3 th:if="${user.provider.toString() == 'LOCAL'}">ID : <span th:text="*{userid}"></span></h3>
+
+    <h3>Email : <span th:text="*{email}"></span>
+        <a th:if="${user.provider.toString() == 'LOCAL'}" th:href="@{/users/me/update-email}">수정</a>
+        <small th:unless="${user.provider.toString() == 'LOCAL'}">(소셜 로그인은 이메일을 변경할 수 없습니다)</small>
+    </h3>
+
+    <h3>Password : ******
+        <a th:href="@{/users/me/update-password}">수정</a>
+    </h3>
+
+    <h3>Nickname : <span th:text="*{nickname}"></span>
+        <a th:href="@{/users/me/update-nickname}">수정</a>
+    </h3>
+
+    <div th:if="${user.subscription != null and user.subscription.active}">
+        <h3>Subscription-Tier : <span th:text="${user.subscription.subscriptionType}"></span></h3>
+        <div th:if="${user.subscription.endDate != null}">
+            <p> &nbsp;&nbsp;&nbsp;&nbsp; End-date :
+                <span th:text="${#temporals.format(user.subscription.endDate, 'yyyy-MM-dd')}"></span>
+                (<span th:text="${user.subscription.getRemainingDays()}"></span>일 남음)
+            </p>
+        </div>
+    </div>
+    <div th:unless="${user.subscription != null and user.subscription.active}">
+        <h3>Subscription-Tier : <span>구독 정보가 없습니다.</span></h3>
+    </div>
+
+    <a th:href="@{/users/me/delete-confirm}">회원 탈퇴</a>
+</div>
+
+<a th:href="@{/}">돌아가기</a> <br>
+
+</body>
+</html>

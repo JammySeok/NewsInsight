@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구독 플랜</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+</head>
+<body>
+
+<div>
+    <h1>구독 플랜</h1>
+
+    <hr>
+
+    <!-- Standard Plan -->
+    <div>
+        <h2>Standard</h2>
+        <p>무료</p>
+        <ul>
+            <li>기본 기능 제공</li>
+            <li>News Summary 포함</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <!-- Premium Plan -->
+    <div>
+        <h2>Premium</h2>
+        <p>월 9,900원</p>
+        <ul>
+            <li><b>모든 Standard 기능</b></li>
+            <li>프리미엄 콘텐츠</li>
+            <li>Today Hot Issue 포함</li>
+            <li>Domain Insight 포함</li>
+        </ul>
+
+        <div>
+            <button id="subscribe-button"
+                    data-plan-name="NewsInsight 프리미엄 구독"
+                    data-amount="9900"
+                    data-buyer-name="데모 사용자"
+                    data-buyer-email="demo@example.com">
+                구독하기
+            </button>
+<!--            <button id="subscribe-button"-->
+<!--                    data-plan-name="NewsInsight 프리미엄 구독"-->
+<!--                    data-amount="9900"-->
+<!--                    th:attr="data-buyer-name=${#authentication.principal.nickname},-->
+<!--                             data-buyer-email=${#authentication.principal.username}">-->
+<!--                구독하기-->
+<!--            </button>-->
+        </div>
+    </div>
+</div>
+
+<script>
+    // '구독하기' 버튼 클릭 시 백엔드에 구독 처리 요청
+    $("#subscribe-button").click(function () {
+        console.log("구독 버튼 클릭. 백엔드에 구독 처리를 요청합니다.");
+
+        const button = $(this);
+        button.prop('disabled', true).text('처리 중...');
+
+        const merchantUid = "sim_order_" + new Date().getTime();
+        const fakeImpUid = "sim_imp_" + new Date().getTime();
+
+        // 백엔드에 구독 처리(검증) 요청
+        $.ajax({
+            type: "POST",
+            url: "/payment/verify",
+            contentType: "application/json",
+            data: JSON.stringify({
+                impUid: fakeImpUid,
+                merchantUid: merchantUid
+            }),
+        })
+        .done(function(response) {
+            console.log("구독 처리가 성공적으로 완료되었습니다.", response);
+            alert('구독이 성공적으로 완료되었습니다.');
+            button.text('구독 완료');
+            window.location.href = "/users/me";
+        })
+        .fail(function(xhr, status, error) {
+            console.error("서버 처리 실패:", xhr.responseText);
+            alert('구독 처리에 실패했습니다.\n' + xhr.responseText);
+            button.prop('disabled', false).text('구독하기');
+        });
+    });
+</script>
+
+<!--<script>-->
+<!--    // 1. 가맹점 식별코드 초기화-->
+<!--    var IMP = window.IMP;-->
+<!--    IMP.init("imp18888027"); // 발급받은 가맹점 식별코드-->
+
+<!--    // 2. '구독하기' 버튼 클릭 시 결제 로직 실행-->
+<!--    $("#subscribe-button").click(function () {-->
+<!--        // 클릭된 버튼으로부터 결제에 필요한 정보를 가져옴-->
+<!--        const planName = $(this).data("plan-name");-->
+<!--        const amount = $(this).data("amount");-->
+<!--        const buyerName = $(this).data("buyer-name");-->
+<!--        const buyerEmail = $(this).data("buyer-email");-->
+
+<!--        // 고유한 주문번호 생성-->
+<!--        const merchantUid = "order_" + new Date().getTime();-->
+
+<!--        requestPay(planName, amount, merchantUid, buyerName, buyerEmail);-->
+<!--    });-->
+
+<!--    // 3. 결제 요청 함수-->
+<!--    function requestPay(planName, amount, merchantUid, buyerName, buyerEmail) {-->
+<!--        IMP.request_pay({-->
+<!--            pay_method: "card",-->
+<!--            merchant_uid: merchantUid, // 고유한 주문번호-->
+<!--            name: planName,            // 상품명-->
+<!--            amount: amount,            // 결제 금액-->
+<!--            buyer_email: buyerEmail,   // 구매자 이메일-->
+<!--            buyer_name: buyerName,     // 구매자 이름-->
+<!--        }, function (rsp) { // 4. 결제 후 콜백 함수-->
+<!--            if (rsp.success) {-->
+<!--                console.log("결제 성공:", rsp);-->
+<!--                // 5. 백엔드에 결제 검증 요청-->
+<!--                verifyPayment(rsp.imp_uid, rsp.merchant_uid);-->
+<!--            } else {-->
+<!--                console.error("결제 실패:", rsp);-->
+<!--                alert("결제에 실패했습니다. 에러: " + rsp.error_msg);-->
+<!--            }-->
+<!--        });-->
+<!--    }-->
+
+<!--    // 6. 서버에 결제 검증을 요청하는 함수-->
+<!--    function verifyPayment(imp_uid, merchant_uid) {-->
+<!--        console.log("서버에 결제 검증을 요청합니다.", { imp_uid, merchant_uid });-->
+
+<!--        $.ajax({-->
+<!--            type: "POST",-->
+<!--            url: "/payment/verify",-->
+<!--            contentType: "application/json",-->
+<!--            // 백엔드 PaymentDTO 형식에 맞게 impUid와 merchantUid를 전송-->
+<!--            data: JSON.stringify({-->
+<!--                impUid: imp_uid,-->
+<!--                merchantUid: merchant_uid-->
+<!--            }),-->
+<!--        })-->
+<!--        .done(function(response) {-->
+<!--            // 서버 검증 성공-->
+<!--            console.log("서버 검증 및 구독 처리 성공:", response);-->
+<!--            alert('구독이 성공적으로 완료되었습니다.');-->
+<!--            // 성공 후 마이페이지 등으로 이동-->
+<!--            // window.location.href = "/users/me";-->
+<!--        })-->
+<!--        .fail(function(xhr, status, error) {-->
+<!--            // 서버 검증 실패-->
+<!--            console.error("서버 검증 실패:", xhr.responseText);-->
+<!--            alert('결제는 성공했으나 서버 검증에 실패했습니다.\n관리자에게 문의하세요: ' + xhr.responseText);-->
+<!--        });-->
+<!--    }-->
+<!--</script>-->
+
+</body>
+</html>
